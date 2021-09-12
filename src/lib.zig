@@ -52,7 +52,7 @@ pub fn parse(k: FlagDashKind) !std.process.ArgIterator {
         for (multis.keys()) |jtem| {
             if (std.mem.eql(u8, name, jtem)) {
                 const value = try argiter.next(multis.allocator).?;
-                try multis.get(name).?.append(value);
+                try multis.getEntry(name).?.value_ptr.append(value);
                 continue :blk;
             }
         }
