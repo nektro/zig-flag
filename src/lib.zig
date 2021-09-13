@@ -2,6 +2,7 @@ const std = @import("std");
 const string = []const u8;
 const List = std.ArrayList(string);
 const extras = @import("extras");
+const range = @import("range").range;
 
 var singles: std.StringArrayHashMap(string) = undefined;
 var multis: std.StringArrayHashMap(List) = undefined;
@@ -66,7 +67,7 @@ pub fn parseEnv() !void {
     const alloc = singles.allocator;
 
     for (singles.keys()) |jtem| {
-        const u = try extras.asciiUpper(alloc, jtem);
+        const u = try fixNameForEnv(alloc, jtem);
         defer alloc.free(u);
         if (std.os.getenv(u)) |value| {
             try singles.put(jtem, value);
@@ -76,7 +77,7 @@ pub fn parseEnv() !void {
         const e = multis.getEntry(jtem).?;
         var n: usize = 1;
         while (true) : (n += 1) {
-            const u = try extras.asciiUpper(alloc, e.key_ptr.*);
+            const u = try fixNameForEnv(alloc, e.key_ptr.*);
             defer alloc.free(u);
             const k = try std.fmt.allocPrint(alloc, "{s}_{d}", .{ u, n });
             defer alloc.free(k);
@@ -87,6 +88,16 @@ pub fn parseEnv() !void {
             break;
         }
     }
+}
+
+fn fixNameForEnv(alloc: *std.mem.Allocator, input: string) !string {
+    var ret = try extras.asciiUpper(alloc, input);
+    for (range(ret.len)) |_, i| {
+        if (ret[i] == '-') {
+            ret[i] = '_';
+        }
+    }
+    return ret;
 }
 
 pub fn getSingle(name: string) ?string {
