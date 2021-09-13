@@ -62,6 +62,33 @@ pub fn parse(k: FlagDashKind) !std.process.ArgIterator {
     return argiter;
 }
 
+pub fn parseEnv() !void {
+    const alloc = singles.allocator;
+
+    for (singles.keys()) |jtem| {
+        const u = try extras.asciiUpper(alloc, jtem);
+        defer alloc.free(u);
+        if (std.os.getenv(u)) |value| {
+            try singles.put(jtem, value);
+        }
+    }
+    for (multis.keys()) |jtem| {
+        const e = multis.getEntry(jtem).?;
+        var n: usize = 1;
+        while (true) : (n += 1) {
+            const u = try extras.asciiUpper(alloc, e.key_ptr.*);
+            defer alloc.free(u);
+            const k = try std.fmt.allocPrint(alloc, "{s}_{d}", .{ u, n });
+            defer alloc.free(k);
+            if (std.os.getenv(k)) |value| {
+                try e.value_ptr.append(value);
+                continue;
+            }
+            break;
+        }
+    }
+}
+
 pub fn getSingle(name: string) ?string {
     const x = singles.get(name).?;
     return if (x.len > 0) x else null;
