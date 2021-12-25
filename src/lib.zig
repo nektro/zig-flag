@@ -7,7 +7,7 @@ const range = @import("range").range;
 var singles: std.StringArrayHashMap(string) = undefined;
 var multis: std.StringArrayHashMap(List) = undefined;
 
-pub fn init(alloc: *std.mem.Allocator) void {
+pub fn init(alloc: std.mem.Allocator) void {
     singles = std.StringArrayHashMap(string).init(alloc);
     multis = std.StringArrayHashMap(List).init(alloc);
 }
@@ -90,7 +90,7 @@ pub fn parseEnv() !void {
     }
 }
 
-fn fixNameForEnv(alloc: *std.mem.Allocator, input: string) !string {
+fn fixNameForEnv(alloc: std.mem.Allocator, input: string) !string {
     var ret = try extras.asciiUpper(alloc, input);
     for (range(ret.len)) |_, i| {
         if (ret[i] == '-') {
