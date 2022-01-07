@@ -12,6 +12,19 @@ pub fn init(alloc: std.mem.Allocator) void {
     multis = std.StringArrayHashMap(List).init(alloc);
 }
 
+pub fn deinit() void {
+    var iter1 = singles.iterator();
+    while (iter1.next()) |entry| singles.allocator.free(entry.value_ptr.*);
+    singles.deinit();
+
+    var iter2 = multis.iterator();
+    while (iter2.next()) |entry| {
+        for (entry.value_ptr.items) |item| multis.allocator.free(item);
+        entry.value_ptr.deinit();
+    }
+    multis.deinit();
+}
+
 pub fn addSingle(name: string) !void {
     try singles.putNoClobber(name, "");
 }
@@ -38,8 +51,9 @@ pub fn parse(k: FlagDashKind) !std.process.ArgIterator {
     defer argiter.deinit();
     var argi: usize = 0;
     blk: while (argiter.next(singles.allocator)) |item| : (argi += 1) {
-        if (argi == 0) continue;
         const data = try item;
+        defer singles.allocator.free(data);
+        if (argi == 0) continue;
         const name = extras.trimPrefix(data, dash);
         if (data.len == name.len) return error.BadFlag;
 
