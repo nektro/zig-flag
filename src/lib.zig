@@ -50,8 +50,8 @@ pub fn parse(k: FlagDashKind) !std.process.ArgIterator {
     var argiter = std.process.args();
     defer argiter.deinit();
     var argi: usize = 0;
-    blk: while (argiter.next(singles.allocator)) |item| : (argi += 1) {
-        const data = try item;
+    blk: while (try argiter.next(singles.allocator)) |item| : (argi += 1) {
+        const data = item;
         defer singles.allocator.free(data);
         if (argi == 0) continue;
         const name = extras.trimPrefix(data, dash);
@@ -59,14 +59,14 @@ pub fn parse(k: FlagDashKind) !std.process.ArgIterator {
 
         for (singles.keys()) |jtem| {
             if (std.mem.eql(u8, name, jtem)) {
-                const value = try argiter.next(singles.allocator).?;
+                const value = (try argiter.next(singles.allocator)).?;
                 try singles.put(name, value);
                 continue :blk;
             }
         }
         for (multis.keys()) |jtem| {
             if (std.mem.eql(u8, name, jtem)) {
-                const value = try argiter.next(multis.allocator).?;
+                const value = (try argiter.next(multis.allocator)).?;
                 try multis.getEntry(name).?.value_ptr.append(value);
                 continue :blk;
             }
