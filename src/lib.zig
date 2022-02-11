@@ -13,15 +13,7 @@ pub fn init(alloc: std.mem.Allocator) void {
 }
 
 pub fn deinit() void {
-    var iter1 = singles.iterator();
-    while (iter1.next()) |entry| singles.allocator.free(entry.value_ptr.*);
     singles.deinit();
-
-    var iter2 = multis.iterator();
-    while (iter2.next()) |entry| {
-        for (entry.value_ptr.items) |item| multis.allocator.free(item);
-        entry.value_ptr.deinit();
-    }
     multis.deinit();
 }
 
