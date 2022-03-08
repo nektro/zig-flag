@@ -14,6 +14,9 @@ pub fn init(alloc: std.mem.Allocator) void {
 
 pub fn deinit() void {
     singles.deinit();
+    for (multis.values()) |array_list| {
+        array_list.deinit();
+    }
     multis.deinit();
 }
 
