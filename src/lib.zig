@@ -42,7 +42,7 @@ pub const FlagDashKind = enum {
 
 pub fn parse(k: FlagDashKind) !std.process.ArgIterator {
     const dash = k.hypen();
-    var argiter = std.process.args();
+    var argiter = try std.process.argsWithAllocator(singles.allocator);
     defer argiter.deinit();
     var argi: usize = 0;
     blk: while (argiter.next()) |item| : (argi += 1) {
