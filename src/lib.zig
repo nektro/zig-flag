@@ -114,6 +114,6 @@ pub fn getSingle(name: string) ?string {
 }
 
 pub fn getMulti(name: string) ?[]const string {
-    const x = multis.get(name).?.toOwnedSlice();
+    const x = multis.get(name).?.items;
     return if (x.len > 0) x else null;
 }
