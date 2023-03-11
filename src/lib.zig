@@ -100,7 +100,7 @@ pub fn parseEnv() !void {
 
 fn fixNameForEnv(alloc: std.mem.Allocator, input: string) !string {
     var ret = try extras.asciiUpper(alloc, input);
-    for (range(ret.len)) |_, i| {
+    for (0..ret.len) |i| {
         if (ret[i] == '-') {
             ret[i] = '_';
         }
