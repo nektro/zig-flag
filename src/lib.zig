@@ -117,3 +117,9 @@ pub fn getMulti(name: string) ?[]const string {
     const x = multis.get(name).?.items;
     return if (x.len > 0) x else null;
 }
+
+pub fn getBool(name: string, default: bool) !bool {
+    const x = getSingle(name) orelse return default;
+    const y = try std.fmt.parseUnsigned(u1, x, 2);
+    return y > 0;
+}
