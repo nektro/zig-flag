@@ -73,23 +73,22 @@ pub fn parse(k: FlagDashKind) !std.process.ArgIterator {
 pub fn parseEnv() !void {
     const alloc = singles.allocator;
 
-    for (singles.keys()) |jtem| {
-        const u = try fixNameForEnv(alloc, jtem);
+    for (singles.keys(), singles.values()) |k, *v| {
+        const u = try fixNameForEnv(alloc, k);
         defer alloc.free(u);
         if (std.os.getenv(u)) |value| {
-            try singles.put(jtem, value);
+            v.* = value;
         }
     }
-    for (multis.keys()) |jtem| {
-        const e = multis.getEntry(jtem).?;
+    for (multis.keys(), multis.values()) |k, *v| {
         var n: usize = 1;
         while (true) : (n += 1) {
-            const u = try fixNameForEnv(alloc, e.key_ptr.*);
+            const u = try fixNameForEnv(alloc, k);
             defer alloc.free(u);
-            const k = try std.fmt.allocPrint(alloc, "{s}_{d}", .{ u, n });
-            defer alloc.free(k);
-            if (std.os.getenv(k)) |value| {
-                try e.value_ptr.append(value);
+            const w = try std.fmt.allocPrint(alloc, "{s}_{d}", .{ u, n });
+            defer alloc.free(w);
+            if (std.os.getenv(w)) |value| {
+                try v.append(value);
                 continue;
             }
             break;
