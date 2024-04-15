@@ -53,6 +53,7 @@ pub fn parse(k: FlagDashKind) !std.process.ArgIterator {
         for (singles.keys()) |jtem| {
             if (std.mem.eql(u8, name, jtem)) {
                 const value = argiter.next().?;
+                argi += 1;
                 try singles.put(name, value);
                 continue :blk;
             }
@@ -60,6 +61,7 @@ pub fn parse(k: FlagDashKind) !std.process.ArgIterator {
         for (multis.keys()) |jtem| {
             if (std.mem.eql(u8, name, jtem)) {
                 const value = argiter.next().?;
+                argi += 1;
                 try multis.getEntry(name).?.value_ptr.append(value);
                 continue :blk;
             }
