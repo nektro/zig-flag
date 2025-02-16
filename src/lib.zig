@@ -67,7 +67,7 @@ pub fn parse(k: FlagDashKind) !std.process.ArgIterator {
             }
         }
         std.log.err("Unrecognized argument: {s}{s}", .{ dash, name });
-        std.os.exit(1);
+        std.posix.exit(1);
     }
     return argiter;
 }
@@ -78,7 +78,7 @@ pub fn parseEnv() !void {
     for (singles.keys(), singles.values()) |k, *v| {
         const u = try fixNameForEnv(alloc, k);
         defer alloc.free(u);
-        if (std.os.getenv(u)) |value| {
+        if (std.posix.getenv(u)) |value| {
             v.* = value;
         }
     }
@@ -89,7 +89,7 @@ pub fn parseEnv() !void {
             defer alloc.free(u);
             const w = try std.fmt.allocPrint(alloc, "{s}_{d}", .{ u, n });
             defer alloc.free(w);
-            if (std.os.getenv(w)) |value| {
+            if (std.posix.getenv(w)) |value| {
                 try v.append(value);
                 continue;
             }
