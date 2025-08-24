@@ -5,3 +5,4 @@ license: MIT
 description: Config management for Zig.
 dependencies:
   - src: git https://github.com/nektro/zig-extras
+  - src: git https://github.com/nektro/zig-sys-libc

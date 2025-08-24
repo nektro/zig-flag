@@ -2,6 +2,7 @@ const std = @import("std");
 const string = []const u8;
 const List = std.ArrayList(string);
 const extras = @import("extras");
+const libc = @import("sys-libc");
 
 var singles: std.StringArrayHashMap(string) = undefined;
 var multis: std.StringArrayHashMap(List) = undefined;
@@ -67,7 +68,7 @@ pub fn parse(k: FlagDashKind) !std.process.ArgIterator {
             }
         }
         std.log.err("Unrecognized argument: {s}{s}", .{ dash, name });
-        std.posix.exit(1);
+        libc.exit(1);
     }
     return argiter;
 }
@@ -78,7 +79,7 @@ pub fn parseEnv() !void {
     for (singles.keys(), singles.values()) |k, *v| {
         const u = try fixNameForEnv(alloc, k);
         defer alloc.free(u);
-        if (std.posix.getenv(u)) |value| {
+        if (libc.getenv(u)) |value| {
             v.* = value;
         }
     }
@@ -87,9 +88,9 @@ pub fn parseEnv() !void {
         while (true) : (n += 1) {
             const u = try fixNameForEnv(alloc, k);
             defer alloc.free(u);
-            const w = try std.fmt.allocPrint(alloc, "{s}_{d}", .{ u, n });
+            const w = try std.fmt.allocPrintZ(alloc, "{s}_{d}", .{ u, n });
             defer alloc.free(w);
-            if (std.posix.getenv(w)) |value| {
+            if (libc.getenv(w)) |value| {
                 try v.append(value);
                 continue;
             }
@@ -98,7 +99,7 @@ pub fn parseEnv() !void {
     }
 }
 
-fn fixNameForEnv(alloc: std.mem.Allocator, input: string) !string {
+fn fixNameForEnv(alloc: std.mem.Allocator, input: string) ![:0]const u8 {
     var ret = try extras.asciiUpper(alloc, input);
     for (0..ret.len) |i| {
         if (ret[i] == '-') {
