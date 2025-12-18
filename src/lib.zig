@@ -2,7 +2,7 @@ const std = @import("std");
 const string = []const u8;
 const List = std.ArrayList(string);
 const extras = @import("extras");
-const libc = @import("sys-libc");
+const linux = @import("sys-linux");
 
 var singles: std.StringArrayHashMap(string) = undefined;
 var multis: std.StringArrayHashMap(List) = undefined;
@@ -68,7 +68,7 @@ pub fn parse(k: FlagDashKind) !std.process.ArgIterator {
             }
         }
         std.log.err("Unrecognized argument: {s}{s}", .{ dash, name });
-        libc.exit(1);
+        linux.exit(1);
     }
     return argiter;
 }
@@ -79,7 +79,7 @@ pub fn parseEnv() !void {
     for (singles.keys(), singles.values()) |k, *v| {
         const u = try fixNameForEnv(alloc, k);
         defer alloc.free(u);
-        if (libc.getenv(u)) |value| {
+        if (linux.getenv(u)) |value| {
             v.* = value;
         }
     }
@@ -90,7 +90,7 @@ pub fn parseEnv() !void {
             defer alloc.free(u);
             const w = try std.fmt.allocPrintZ(alloc, "{s}_{d}", .{ u, n });
             defer alloc.free(w);
-            if (libc.getenv(w)) |value| {
+            if (linux.getenv(w)) |value| {
                 try v.append(value);
                 continue;
             }
