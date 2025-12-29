@@ -1,15 +1,15 @@
 const std = @import("std");
-const string = []const u8;
+const string = [:0]const u8;
 const List = std.ArrayList(string);
 const extras = @import("extras");
 const linux = @import("sys-linux");
 
-var singles: std.StringArrayHashMap(string) = undefined;
-var multis: std.StringArrayHashMap(List) = undefined;
+var singles: std.ArrayHashMap(string, string, std.array_hash_map.StringContext, true) = undefined;
+var multis: std.ArrayHashMap(string, List, std.array_hash_map.StringContext, true) = undefined;
 
 pub fn init(alloc: std.mem.Allocator) void {
-    singles = std.StringArrayHashMap(string).init(alloc);
-    multis = std.StringArrayHashMap(List).init(alloc);
+    singles = std.ArrayHashMap(string, string, std.array_hash_map.StringContext, true).init(alloc);
+    multis = std.ArrayHashMap(string, List, std.array_hash_map.StringContext, true).init(alloc);
 }
 
 pub fn deinit() void {
@@ -48,7 +48,7 @@ pub fn parse(k: FlagDashKind) !std.process.ArgIterator {
     blk: while (argiter.next()) |item| : (argi += 1) {
         const data = item;
         if (argi == 0) continue;
-        const name = extras.trimPrefix(data, dash);
+        const name: string = @ptrCast(extras.trimPrefix(data, dash));
         if (data.len == name.len) return error.BadFlag;
 
         for (singles.keys()) |jtem| {
@@ -77,18 +77,14 @@ pub fn parseEnv() !void {
     const alloc = singles.allocator;
 
     for (singles.keys(), singles.values()) |k, *v| {
-        const u = try fixNameForEnv(alloc, k);
-        defer alloc.free(u);
-        if (linux.getenv(u)) |value| {
+        if (linux.getenv(k)) |value| {
             v.* = value;
         }
     }
     for (multis.keys(), multis.values()) |k, *v| {
         var n: usize = 1;
         while (true) : (n += 1) {
-            const u = try fixNameForEnv(alloc, k);
-            defer alloc.free(u);
-            const w = try std.fmt.allocPrintZ(alloc, "{s}_{d}", .{ u, n });
+            const w = try std.fmt.allocPrintZ(alloc, "{s}_{d}", .{ k, n });
             defer alloc.free(w);
             if (linux.getenv(w)) |value| {
                 try v.append(value);
