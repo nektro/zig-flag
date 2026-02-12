@@ -117,6 +117,6 @@ pub fn getMulti(name: string) ?[]const string {
 
 pub fn getBool(name: string, default: bool) !bool {
     const x = getSingle(name) orelse return default;
-    const y = try std.fmt.parseUnsigned(u1, x, 2);
+    const y = try extras.parseDigits(u1, x, 2);
     return y > 0;
 }
