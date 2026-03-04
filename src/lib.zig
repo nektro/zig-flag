@@ -1,8 +1,14 @@
 const std = @import("std");
+const builtin = @import("builtin");
 const string = [:0]const u8;
 const List = std.ArrayList(string);
 const extras = @import("extras");
 const linux = @import("sys-linux");
+
+const sys = switch (builtin.target.os.tag) {
+    .linux => linux,
+    else => unreachable, // TODO:
+};
 
 var singles: std.ArrayHashMap(string, string, std.array_hash_map.StringContext, true) = undefined;
 var multis: std.ArrayHashMap(string, List, std.array_hash_map.StringContext, true) = undefined;
@@ -68,7 +74,7 @@ pub fn parse(k: FlagDashKind) !std.process.ArgIterator {
             }
         }
         std.log.err("Unrecognized argument: {s}{s}", .{ dash, name });
-        linux.exit(1);
+        sys.exit(1);
     }
     return argiter;
 }
@@ -77,7 +83,7 @@ pub fn parseEnv() !void {
     const alloc = singles.allocator;
 
     for (singles.keys(), singles.values()) |k, *v| {
-        if (linux.getenv(k)) |value| {
+        if (sys.getenv(k)) |value| {
             v.* = value;
         }
     }
@@ -86,7 +92,7 @@ pub fn parseEnv() !void {
         while (true) : (n += 1) {
             const w = try std.fmt.allocPrintZ(alloc, "{s}_{d}", .{ k, n });
             defer alloc.free(w);
-            if (linux.getenv(w)) |value| {
+            if (sys.getenv(w)) |value| {
                 try v.append(value);
                 continue;
             }
