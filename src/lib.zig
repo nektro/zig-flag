@@ -83,7 +83,14 @@ pub fn parseEnv() !void {
     const alloc = singles.allocator;
 
     for (singles.keys(), singles.values()) |k, *v| {
-        if (sys.getenv(k)) |value| {
+        var buf: [64]u8 = @splat(0);
+        for (k, 0..) |c, i| buf[i] = switch (c) {
+            'A'...'Z', '_', '0'...'9' => |a| a,
+            'a'...'z' => |a| a - 'a' + 'A',
+            '-' => '_',
+            else => unreachable,
+        };
+        if (sys.getenv(buf[0..k.len :0])) |value| {
             v.* = value;
         }
     }
