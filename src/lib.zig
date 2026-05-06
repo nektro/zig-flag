@@ -80,8 +80,6 @@ pub fn parse(k: FlagDashKind) !std.process.ArgIterator {
 }
 
 pub fn parseEnv() !void {
-    const alloc = singles.allocator;
-
     for (singles.keys(), singles.values()) |k, *v| {
         var buf: [64]u8 = @splat(0);
         for (k, 0..) |c, i| buf[i] = switch (c) {
@@ -97,13 +95,17 @@ pub fn parseEnv() !void {
     for (multis.keys(), multis.values()) |k, *v| {
         var n: usize = 1;
         while (true) : (n += 1) {
-            const w = try std.fmt.allocPrintZ(alloc, "{s}_{d}", .{ k, n });
-            defer alloc.free(w);
-            if (sys.getenv(w)) |value| {
-                try v.append(value);
-                continue;
-            }
-            break;
+            var buf: [64]u8 = @splat(0);
+            for (k, 0..) |c, i| buf[i] = switch (c) {
+                'A'...'Z', '_', '0'...'9' => |a| a,
+                'a'...'z' => |a| a - 'a' + 'A',
+                '-' => '_',
+                else => unreachable,
+            };
+            const buf2 = try std.fmt.bufPrint(buf[k.len..], "_{d}", .{n});
+            const w = buf[0 .. k.len + buf2.len :0];
+            const value = sys.getenv(w) orelse break;
+            try v.append(value);
         }
     }
 }
