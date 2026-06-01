@@ -1,7 +1,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const string = [:0]const u8;
-const List = std.ArrayList(string);
+const List = std.array_list.Managed(string);
 const extras = @import("extras");
 const linux = @import("sys-linux");
 
