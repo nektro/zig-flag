@@ -10,28 +10,28 @@ const sys = switch (builtin.target.os.tag) {
     else => unreachable, // TODO:
 };
 
-var singles: std.ArrayHashMap(string, string, std.array_hash_map.StringContext, true) = undefined;
-var multis: std.ArrayHashMap(string, List, std.array_hash_map.StringContext, true) = undefined;
+var allocator: std.mem.Allocator = undefined;
+var singles: std.array_hash_map.String(string) = .empty;
+var multis: std.array_hash_map.String(List) = .empty;
 
 pub fn init(alloc: std.mem.Allocator) void {
-    singles = std.ArrayHashMap(string, string, std.array_hash_map.StringContext, true).init(alloc);
-    multis = std.ArrayHashMap(string, List, std.array_hash_map.StringContext, true).init(alloc);
+    allocator = alloc;
 }
 
 pub fn deinit() void {
-    singles.deinit();
+    singles.deinit(allocator);
     for (multis.values()) |array_list| {
         array_list.deinit();
     }
-    multis.deinit();
+    multis.deinit(allocator);
 }
 
 pub fn addSingle(name: string) !void {
-    try singles.putNoClobber(name, "");
+    try singles.putNoClobber(allocator, name, "");
 }
 
 pub fn addMulti(name: string) !void {
-    try multis.putNoClobber(name, List.init(multis.allocator));
+    try multis.putNoClobber(allocator, name, List.init(allocator));
 }
 
 pub const FlagDashKind = enum {
@@ -46,9 +46,9 @@ pub const FlagDashKind = enum {
     }
 };
 
-pub fn parse(k: FlagDashKind) !std.process.ArgIterator {
+pub fn parse(k: FlagDashKind, args: std.process.Args) !std.process.Args.Iterator {
     const dash = k.hypen();
-    var argiter = try std.process.argsWithAllocator(singles.allocator);
+    var argiter = args.iterate();
     defer argiter.deinit();
     var argi: usize = 0;
     blk: while (argiter.next()) |item| : (argi += 1) {
@@ -61,7 +61,7 @@ pub fn parse(k: FlagDashKind) !std.process.ArgIterator {
             if (std.mem.eql(u8, name, jtem)) {
                 const value = argiter.next().?;
                 argi += 1;
-                try singles.put(name, value);
+                try singles.put(allocator, name, value);
                 continue :blk;
             }
         }
