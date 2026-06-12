@@ -121,17 +121,18 @@ fn fixNameForEnv(alloc: std.mem.Allocator, input: string) ![:0]const u8 {
 }
 
 pub fn getSingle(name: string) ?string {
-    const x = singles.get(name).?;
+    const x = singles.get(name) orelse return null;
     return if (x.len > 0) x else null;
 }
 
 pub fn getMulti(name: string) ?[]const string {
-    const x = multis.get(name).?.items;
+    const x = (multis.get(name) orelse return null).items;
     return if (x.len > 0) x else null;
 }
 
 pub fn getBool(name: string, default: bool) !bool {
     const x = getSingle(name) orelse return default;
-    const y = try extras.parseDigits(u1, x, 2);
+    if (std.mem.eql(u8, x, "true")) return true;
+    const y = extras.parseDigits(u1, x, 2) catch return default;
     return y > 0;
 }
