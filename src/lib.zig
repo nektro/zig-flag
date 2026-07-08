@@ -130,7 +130,7 @@ pub fn getMulti(name: string) ?[]const string {
     return if (x.len > 0) x else null;
 }
 
-pub fn getBool(name: string, default: bool) !bool {
+pub fn getBool(name: string, default: bool) bool {
     const x = getSingle(name) orelse return default;
     if (std.mem.eql(u8, x, "true")) return true;
     const y = extras.parseDigits(u1, x, 2) catch return default;
