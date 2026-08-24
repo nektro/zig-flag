@@ -7,6 +7,9 @@ const linux = @import("sys-linux");
 
 const sys = switch (builtin.target.os.tag) {
     .linux => linux,
+    .freebsd => @import("sys-freebsd"),
+    .netbsd => @import("sys-netbsd"),
+    .openbsd => @import("sys-openbsd"),
     else => unreachable, // TODO:
 };
 
