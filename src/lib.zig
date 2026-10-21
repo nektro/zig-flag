@@ -3,15 +3,7 @@ const builtin = @import("builtin");
 const string = [:0]const u8;
 const List = std.array_list.Managed(string);
 const extras = @import("extras");
-const linux = @import("sys-linux");
-
-const sys = switch (builtin.target.os.tag) {
-    .linux => linux,
-    .freebsd => @import("sys-freebsd"),
-    .netbsd => @import("sys-netbsd"),
-    .openbsd => @import("sys-openbsd"),
-    else => unreachable, // TODO:
-};
+const sys = @import("sys").impl;
 
 var allocator: std.mem.Allocator = undefined;
 var singles: std.array_hash_map.String(string) = .empty;

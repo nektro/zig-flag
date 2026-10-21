@@ -1,8 +1,5 @@
 MIT:
 = https://spdx.org/licenses/MIT
 - This
+- git https://git.nektro.net/lib/zig/sys/
 - git https://github.com/nektro/zig-extras
-- git https://github.com/nektro/zig-sys-freebsd
-- git https://github.com/nektro/zig-sys-linux
-- git https://github.com/nektro/zig-sys-netbsd
-- git https://github.com/nektro/zig-sys-openbsd
